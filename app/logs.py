@@ -46,54 +46,47 @@ async def view_logs_menu(message: Message):
 
 
 
-
 @router_logs.callback_query(F.data.startswith("logs:"))
 async def view_selected_logs(callback: CallbackQuery):
     """
     Обрабатывает выбор файла и отправляет логи.
     """
-    # Обычная проверка доступа
+    # Проверка доступа
     data = load_access_data()
-    user_id = callback.from_user.id  # Исправлено: callback вместо message
+    user_id = callback.from_user.id
     role = get_user_role(user_id, data)
     if role not in ["👑 Главный администратор!", "🛠 Администратор!"]:
         await callback.answer("⛔ У вас нет доступа.", show_alert=True)
-        return  # Завершаем хендлер без выполнения логики
+        return
 
     try:
         # Извлекаем путь к файлу из callback_data
-        log_file = callback.data.split(":", 1)[1]  # Исправлено: callback.data
+        log_file = callback.data.split(":", 1)[1]
         if not os.path.exists(log_file):
-            await callback.answer("Файл больше не существует.")
+            await callback.answer("❌ Файл больше не существует.", show_alert=True)
             return
 
-        # Проверяем размер файла
+        # Проверяем размер файла (только для информационного сообщения)
         file_size = os.path.getsize(log_file)
-        max_size_for_full_send = 1024 * 1024  # 1 MB
-        num_lines = 50
-
-        if file_size > max_size_for_full_send:
-            # Файл большой: отправляем только последние строки
-            await send_last_lines(callback.message, log_file, num_lines)  # Исправлено: callback.message
-        else:
-            # Файл маленький: отправляем последние строки или весь файл
-            last_lines = get_last_lines(log_file, num_lines)
-            if len(last_lines) <= 4000:
-                await callback.message.answer(
-                    f"Последние логи из {os.path.basename(log_file)} (последние {num_lines} строк):\n\n{last_lines}", 
-                    parse_mode=None
-                )
-                logging.info(
-                    f"Админ {callback.from_user.id} просмотрел последние логи из {log_file} как текст.")  # Исправлено: callback.from_user.id
-            else:
-                # Отправляем весь файл
-                await send_full_log_file(callback.message, log_file)  # Исправлено: callback.message
-
+        
+        # ВСЕГДА отправляем файл как документ (как в send_full_log_file)
+        document = FSInputFile(
+            log_file, 
+            filename=f'{os.path.basename(log_file)}.txt'
+        )
+        
+        caption = f"📋 Логи из {os.path.basename(log_file)}"
+        if file_size > 1024 * 1024:  # > 1 MB
+            caption += " (файл большой, рекомендуется скачать)"
+        
+        await callback.message.answer_document(document, caption=caption)
+        logging.info(f"Админ {user_id} скачал файл логов {log_file}.")
+        
         await callback.answer()  # Закрываем уведомление о нажатии
+        
     except Exception as e:
-        logging.error(
-            f"Ошибка при отправке логов из {log_file} админу {callback.from_user.id}: {e}")  # Исправлено: callback.from_user.id
-        await callback.message.answer("Произошла ошибка при загрузке логов. Попробуйте позже.")
+        logging.error(f"Ошибка при отправке логов из {log_file} админу {user_id}: {e}")
+        await callback.message.answer("⚠️ Произошла ошибка при загрузке логов. Попробуйте позже.")
         await callback.answer()
 
 
@@ -150,3 +143,5 @@ async def send_full_log_file(message: Message, log_file: str):
         logging.error(
             f"Ошибка отправки полного файла {log_file} админу {message.from_user.id}: {e}")
         await message.answer("Не удалось отправить файл логов.")
+
+
