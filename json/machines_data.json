@@ -1,0 +1,302 @@
+{
+    "maschines_1": [
+        {
+            "name": "Koelmann",
+            "inventory_number": "4030-010"
+        },
+        {
+            "name": "Carnaghi 4m",
+            "inventory_number": "4050-953"
+        },
+        {
+            "name": "Fadal VMC-4525",
+            "inventory_number": "4014-674"
+        },
+        {
+            "name": "Carnaghi 5m",
+            "inventory_number": "4050-959"
+        },
+        {
+            "name": "Mecof CS500",
+            "inventory_number": "4037-387"
+        },
+        {
+            "name": "Skoda W160HC",
+            "inventory_number": "4034-023"
+        },
+        {
+            "name": "1Е516ПФ",
+            "inventory_number": "4032-049"
+        },
+        {
+            "name": "1550Т",
+            "inventory_number": "4050-019"
+        },
+        {
+            "name": "Hyundai L2600LY",
+            "inventory_number": "130000010563"
+        },
+        {
+            "name": "МС613Ф2",
+            "inventory_number": "4037-010"
+        },
+        {
+            "name": "Skoda S2500",
+            "inventory_number": "4050-009"
+        },
+        {
+            "name": "HC 17",
+            "inventory_number": "4050-011"
+        },
+        {
+            "name": "Mecof CSX",
+            "inventory_number": "4037-390"
+        },
+        {
+            "name": "BOM-50",
+            "inventory_number": "4010-563"
+        },
+        {
+            "name": "BOM-50/A",
+            "inventory_number": "4010-471"
+        },
+        {
+            "name": "ТКС 1516Ф1",
+            "inventory_number": "4050-018"
+        },
+        {
+            "name": "ГРС 2Г660Ф2",
+            "inventory_number": "4050-022"
+        },
+        {
+            "name": "Sedin 1А525МФ4",
+            "inventory_number": "4032-961"
+        },
+        {
+            "name": "РСС 1Р-43",
+            "inventory_number": "4010-541"
+        },
+        {
+            "name": "РСС RM-65",
+            "inventory_number": "4010-455"
+        },
+        {
+            "name": "Water Jet NC2520D №1",
+            "inventory_number": "4231-022"
+        },
+        {
+            "name": "Water Jet NC2520 №2",
+            "inventory_number": "4231-023"
+        }
+    ],
+    "maschines_2": [
+        {
+            "name": "TACCHI HD 3/90H",
+            "inventory_number": "4030-049"
+        },
+        {
+            "name": "Carnaghi 2m",
+            "inventory_number": "4037-388"
+        },
+        {
+            "name": "Samat 400",
+            "inventory_number": "4000-940"
+        },
+        {
+            "name": "1А516МФ3",
+            "inventory_number": "4032-046"
+        },
+        {
+            "name": "2А622Ф4",
+            "inventory_number": "4034-028"
+        },
+        {
+            "name": "INNSE CFS-WZ-150",
+            "inventory_number": "4050-261"
+        },
+        {
+            "name": "INNSE RAM",
+            "inventory_number": "4050-016"
+        },
+        {
+            "name": "Pinacho ST 225x1000",
+            "inventory_number": ""
+        },
+        {
+            "name": "SKI 20B",
+            "inventory_number": "4032-045"
+        },
+        {
+            "name": "КУ80Л",
+            "inventory_number": ""
+        },
+        {
+            "name": "INNSE FAB",
+            "inventory_number": "4050-016"
+        },
+        {
+            "name": "6Р13Ф3-01",
+            "inventory_number": "4014-457"
+        },
+        {
+            "name": "Wohlenberg UE1400-111",
+            "inventory_number": "4030-045"
+        },
+        {
+            "name": "Ст. долбежный М7414",
+            "inventory_number": "30200062"
+        }
+    ],
+    "maschines_3": [
+        {
+            "name": "Staragg HEC630H",
+            "inventory_number": "4034-537"
+        },
+        {
+            "name": "16М30Ф3171",
+            "inventory_number": "4000-858"
+        },
+        {
+            "name": "НС212Ф2",
+            "inventory_number": "4050-024"
+        },
+        {
+            "name": "Uniport 6000",
+            "inventory_number": "130000010418"
+        },
+        {
+            "name": "Correanayak FP50",
+            "inventory_number": "130000010221"
+        },
+        {
+            "name": "65А90Ф1",
+            "inventory_number": "130000001119"
+        },
+        {
+            "name": "Micamation SA 4000",
+            "inventory_number": ""
+        },
+        {
+            "name": "Skoda FCW 150 NC",
+            "inventory_number": "4034-536"
+        },
+        {
+            "name": "Taymak MCFH 63",
+            "inventory_number": "4034-535"
+        },
+        {
+            "name": "Hyundai L400LMC",
+            "inventory_number": "130000010801"
+        },
+        {
+            "name": "Okuma MA-650VB",
+            "inventory_number": "130000010247"
+        },
+        {
+            "name": "Пресс-5000 Рязань",
+            "inventory_number": "4070-657"
+        }
+    ],
+    "maschines_11": [
+        {
+            "name": "Гранат М-2К",
+            "inventory_number": ""
+        },
+        {
+            "name": "Hammerly",
+            "inventory_number": "4064-907"
+        },
+        {
+            "name": "ByStar-3015",
+            "inventory_number": "4231-015"
+        },
+        {
+            "name": "BySprint",
+            "inventory_number": "4231-016"
+        },
+        {
+            "name": "HJ 2160",
+            "inventory_number": ""
+        },
+        {
+            "name": "Schuler H8H",
+            "inventory_number": "4860-452"
+        },
+        {
+            "name": "Пресс №34 К-3535",
+            "inventory_number": "4070-063"
+        },
+        {
+            "name": "Лак.машина 6СКО",
+            "inventory_number": "4553-009"
+        },
+        {
+            "name": "Прессовка 13И118",
+            "inventory_number": "4530-475"
+        }
+    ],
+    "maschines_15": [
+        {
+            "name": "Micamation MI-355",
+            "inventory_number": "130000010248"
+        },
+        {
+            "name": "Schuemann №14",
+            "inventory_number": "4061-005"
+        },
+        {
+            "name": "Roebel BC 14720",
+            "inventory_number": "4530-653"
+        },
+        {
+            "name": "HTBFM 5000",
+            "inventory_number": "4530-655"
+        },
+        {
+            "name": "TBFM 14000",
+            "inventory_number": "4530-654"
+        },
+        {
+            "name": "ЛИС 8000",
+            "inventory_number": "4503-454"
+        },
+        {
+            "name": "ABB IRC5",
+            "inventory_number": ""
+        }
+    ],
+    "maschines_17": [],
+    "maschines_20": [],
+    "maschines_26": [
+        {
+            "name": "LaborMax 4220-1T5A",
+            "inventory_number": ""
+        },
+        {
+            "name": "CMS AQUATEC",
+            "inventory_number": "130000010625"
+        },
+        {
+            "name": "Bystronic Byjet 3015",
+            "inventory_number": "4231-014"
+        },
+        {
+            "name": "Okuma M460-VE №1",
+            "inventory_number": "130000010137"
+        },
+        {
+            "name": "Okuma M460-VE №2",
+            "inventory_number": "130000010138"
+        },
+        {
+            "name": "Кубань 1П5 32",
+            "inventory_number": "4032-023"
+        }
+    ],
+    "maschines_kmt": [
+        {
+            "name": "HOESCH MFD",
+            "inventory_number": "4050-014"
+        }
+    ]
+}
