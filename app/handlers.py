@@ -223,6 +223,7 @@ async def history(message: Message):
     if role in ["👑 Главный администратор!", "🛠 Администратор!", "👥 Пользователь"]:
         temp_message = await message.answer( "⏳ Получаю историю за сутки...")
         try:
+            await asyncio.sleep(1)
             today_history = await get_today_history()
             await temp_message.edit_text(today_history, parse_mode="HTML")
             logger.info(
@@ -1196,3 +1197,4 @@ async def confirm_date(callback: CallbackQuery, state: FSMContext):
                 f"Пользователь {callback.from_user.id} подтвердил даты: начало {data.get('selected_date_start').strftime('%d.%m.%Y')}, окончание {data.get('selected_date_end').strftime('%d.%m.%Y')}.")
             # ✅ Отправляем сообщение сразу, чтобы вызвать `start_cmd`
             await start_cmd(callback.message, state)
+
