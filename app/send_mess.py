@@ -3,7 +3,7 @@ import logging
 from aiogram import Router, F
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 from app.handlers import get_user_role, load_access_data
-from app.keyboards import edit_mashines, main
+from app.keyboards import edit_mashines, main, admin_menu
 
 # Роутер для рассылки
 router_broadcast = Router()
@@ -109,7 +109,7 @@ async def handle_broadcast_confirmation(callback):
         if total_users == 0:
             # Случай без пользователей: отправляем отчет как новое сообщение с клавиатурой
             report_text = "Нет пользователей для рассылки (файл пуст или ошибка чтения)."
-            await callback.message.answer(report_text, reply_markup=edit_mashines)
+            await callback.message.answer(report_text, reply_markup=admin_menu)
             logging.info(
                 f"Главный админ {user_id} попытался отправить рассылку, но пользователей нет.")
             await callback.answer("Рассылка не отправлена (нет пользователей).")
@@ -131,7 +131,7 @@ async def handle_broadcast_confirmation(callback):
 
         # Отчет о выполнении: отправляем как новое сообщение с клавиатурой (вместо edit_text + пустой answer)
         report_text = f"Рассылка завершена!\nОтправлено: {sent_count}/{total_users - 1}\nНе удалось: {failed_count}\n\nТекст: {broadcast_text}"
-        await callback.message.answer(report_text, reply_markup=edit_mashines)
+        await callback.message.answer(report_text, reply_markup=admin_menu)
         # Опционально: удалить старое сообщение с кнопками для чистоты чата
         await callback.message.delete()
 
@@ -143,10 +143,11 @@ async def handle_broadcast_confirmation(callback):
         # Отмена: отправляем отчет как новое сообщение с клавиатурой
         waiting_for_broadcast[user_id] = {"waiting": False, "text": None}
         report_text = "Рассылка отменена."
-        await callback.message.answer(report_text, reply_markup=edit_mashines)
+        await callback.message.answer(report_text, reply_markup=admin_menu)
 
         # Опционально: удалить старое сообщение
         await callback.message.delete()
 
         logging.info(f"Главный админ {user_id} отменил рассылку.")
         await callback.answer("Отменено.")
+
