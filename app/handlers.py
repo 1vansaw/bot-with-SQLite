@@ -483,6 +483,14 @@ async def perform_database_restore(backup_filename: str) -> bool:
         return False
 
 
+@router.message(F.text == '🕒 Автокопирование БД')
+async def auto_backup_settings(message: Message):
+    await message.answer(
+        "Выберите интервал автоматического резервного копирования:",
+        reply_markup=kb.auto_backup_menu
+    )
+
+
 
 
 @router.message(F.text == '📚 Руководства')
@@ -1197,4 +1205,5 @@ async def confirm_date(callback: CallbackQuery, state: FSMContext):
                 f"Пользователь {callback.from_user.id} подтвердил даты: начало {data.get('selected_date_start').strftime('%d.%m.%Y')}, окончание {data.get('selected_date_end').strftime('%d.%m.%Y')}.")
             # ✅ Отправляем сообщение сразу, чтобы вызвать `start_cmd`
             await start_cmd(callback.message, state)
+
 
