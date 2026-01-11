@@ -289,49 +289,65 @@ async def go_to_main_menu(callback: CallbackQuery, state: FSMContext):
 
 @router.message(F.text == '💾 Резервная копия БД')
 async def backup_database_handler(message: Message):
+    # Сообщение о начале процесса
+    progress_msg = await message.answer("⏳ Создаю резервную копию базы данных...")
+
     try:
-        # Путь к исходной базе данных
+        await asyncio.sleep(1)
         source_db = 'bot_data.db'
-        
+
         # Проверяем существование исходной базы
         if not os.path.exists(source_db):
-            await message.answer("❌ Ошибка: Исходная база данных не найдена!")
+            await progress_msg.edit_text("❌ Ошибка: исходная база данных не найдена!")
+            logger.error("Резервная копия: исходная база данных не найдена.")
             return
-        
+
         # Создаем папку backup, если она не существует
         backup_dir = 'backup'
         if not os.path.exists(backup_dir):
             os.makedirs(backup_dir)
-        
+
         # Получаем список всех файлов резервных копий
-        backup_files = [f for f in os.listdir(backup_dir) if f.startswith('Копия_БД_') and f.endswith('.db')]
-        
+        backup_files = [
+            f for f in os.listdir(backup_dir)
+            if f.startswith('Копия_БД_') and f.endswith('.db')
+        ]
+
         # Если уже есть 5 копий, удаляем самую старую
         if len(backup_files) >= 5:
-            # Сортируем файлы по дате создания (от старых к новым)
             backup_files.sort(key=lambda x: os.path.getctime(os.path.join(backup_dir, x)))
             oldest_file = backup_files[0]
             os.remove(os.path.join(backup_dir, oldest_file))
-        
+            logger.info(f"Удалена старая резервная копия: {oldest_file}")
+
         # Создаем имя файла с временной меткой
         timestamp = datetime.now().strftime("%d.%m.%Y_%H-%M-%S")
         backup_filename = f"Копия_БД_{timestamp}.db"
-        
-        # Путь к файлу резервной копии
         backup_path = os.path.join(backup_dir, backup_filename)
-        
-        # Создаем резервную копию
+
+        # Копируем базу
         shutil.copy2(source_db, backup_path)
-        
+
         # Получаем текущее количество копий
-        current_count = len([f for f in os.listdir(backup_dir) if f.startswith('Копия_БД_') and f.endswith('.db')])
-        
-        await message.answer(f"✅ Резервная копия базы данных успешно создана!\n"
-                           f"Файл: {backup_filename}\n"
-                           f"Всего копий: {current_count}/5")
-        
+        current_count = len([
+            f for f in os.listdir(backup_dir)
+            if f.startswith('Копия_БД_') and f.endswith('.db')
+        ])
+
+        # Обновляем сообщение о прогрессе
+        await progress_msg.edit_text(
+            f"✅ Резервная копия успешно создана!\n"
+            f"Файл: {backup_filename}\n"
+            f"Всего копий: {current_count}/5"
+        )
+
+        logger.info(f"Создана резервная копия: {backup_filename} ({current_count}/5)")
+
     except Exception as e:
-        await message.answer(f"❌ Ошибка при создании резервной копии: {str(e)}")
+        await progress_msg.edit_text(f"❌ Ошибка при создании резервной копии: {str(e)}")
+        logger.error(f"Ошибка резервного копирования: {e}")
+
+
 
 
 
@@ -1205,5 +1221,6 @@ async def confirm_date(callback: CallbackQuery, state: FSMContext):
                 f"Пользователь {callback.from_user.id} подтвердил даты: начало {data.get('selected_date_start').strftime('%d.%m.%Y')}, окончание {data.get('selected_date_end').strftime('%d.%m.%Y')}.")
             # ✅ Отправляем сообщение сразу, чтобы вызвать `start_cmd`
             await start_cmd(callback.message, state)
+
 
 
