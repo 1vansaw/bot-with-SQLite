@@ -74,12 +74,27 @@ admin_menu = ReplyKeyboardMarkup(
          KeyboardButton(text='📢 Рассылка')],
         [KeyboardButton(text='📄 Посмотреть логи'),
          KeyboardButton(text='💾 Резервная копия БД')],
-        [KeyboardButton(text='🔄 Восстановить БД из копии')], 
+        [KeyboardButton(text='🕒 Автокопирование БД')], 
+        [KeyboardButton(text='🔄 Восстановить БД из копии')],
         [KeyboardButton(text='↩️ Назад')]
     ],
     resize_keyboard=True,
     input_field_placeholder='Выберите действие'
 )
+
+
+auto_backup_menu = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text='🔁 Раз в день')],
+        [KeyboardButton(text='📅 Раз в неделю')],
+        [KeyboardButton(text='🗓 Раз в месяц')],
+        [KeyboardButton(text='❌ Отключить автокопирование')],
+        [KeyboardButton(text='↩️ Назад')]
+    ],
+    resize_keyboard=True,
+    input_field_placeholder='Выберите интервал'
+)
+
 
 
 
@@ -182,3 +197,4 @@ shops_17 = create_keyboard(load_machines()['maschines_17'])
 shops_20 = create_keyboard(load_machines()['maschines_20'])
 shops_26 = create_keyboard(load_machines()['maschines_26'])
 shops_kmt = create_keyboard(load_machines()['maschines_kmt'])
+
