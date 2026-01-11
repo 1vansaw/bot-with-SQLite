@@ -14,32 +14,47 @@ logger = logging.getLogger(__name__)
 DB_PATH = 'bot_data.db'
 
 
+def normalize(s: str) -> str:
+    if s is None:
+        return ""
+    s = re.sub(r'[^0-9A-Za-zА-Яа-я]', '', s)
+    return s.lower()
+
+
+async def register_normalize_function(db: aiosqlite.Connection):
+    await db.create_function("normalize", 1, normalize)
+
+
 async def search_data(phrase: str):
-    """Асинхронный поиск записей по фразе (LIKE в текстовых колонках)."""
     async with aiosqlite.connect(DB_PATH) as db:
+        await register_normalize_function(db)
+
+        normalized = normalize(phrase)
+        like = f"%{normalized}%"
+
         query = """
-        SELECT id, date, workers, work_description, work_solution, fault_status, start_time, end_time, duration, shift, machine, inventory_number
+        SELECT id, date, workers, work_description, work_solution, fault_status,
+               start_time, end_time, duration, shift, machine, inventory_number
         FROM tasks
-        WHERE date LIKE ? OR workers LIKE ? OR work_description LIKE ? OR work_solution LIKE ? OR fault_status LIKE ? OR machine LIKE ? OR inventory_number LIKE ?
+        WHERE normalize(date)             LIKE ?
+           OR normalize(workers)          LIKE ?
+           OR normalize(work_description) LIKE ?
+           OR normalize(work_solution)    LIKE ?
+           OR normalize(fault_status)     LIKE ?
+           OR normalize(machine)          LIKE ?
+           OR normalize(inventory_number) LIKE ?
+           OR normalize(shift)            LIKE ?
         ORDER BY id DESC
         """
-        params = (f'%{phrase}%', f'%{phrase}%', f'%{phrase}%', f'%{phrase}%', f'%{phrase}%', f'%{phrase}%', f'%{phrase}%')
+
+        params = (like, like, like, like, like, like, like, like)
+
         async with db.execute(query, params) as cursor:
             rows = await cursor.fetchall()
             columns = [desc[0] for desc in cursor.description]
-            results = []
-            for row in rows:
-                record = dict(zip(columns, row))
-                # Обработка поля shift: маппинг на название цеха
-                # shift_key = record.get('shift')
-                # if shift_key is not None:
-                #     shift_key_str = str(shift_key)  # Конвертация в строку для безопасного сравнения
-                #     shop_name = shops.get(shift_key_str, "Не указан")
-                # else:
-                #     shop_name = "Не указан"
-                # record['shift'] = shop_name  # Заменяем сырой shift на название цеха
-                results.append(record)
-            return results
+            return [dict(zip(columns, row)) for row in rows]
+
+
 
 
 async def init_db():
@@ -176,4 +191,5 @@ async def get_today_history():
 
     separator = "\n---------------------------------------------\n"
     return separator.join(messages)
+
 
