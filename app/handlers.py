@@ -517,11 +517,13 @@ async def manuals(message: Message):
 
     if role in ["👑 Главный администратор!", "🛠 Администратор!", "👥 Пользователь"]:
         text = (
-            f"Выберите руководство:\n\n"
-            f"📄 [Параметры MD]({MD})\n"
-            f"🔧 [PLC Alarm]({PLC_ALARM})\n"
-            f"⚙️ [H Command]({H_COMMAND})"
-        )
+                "Выберите руководство:\n\n"
+                f"📄 <a href=\"{MD}\">Параметры MD</a>\n"
+                f"🔧 <a href=\"{PLC_ALARM}\">PLC Alarm</a>\n"
+                f"⚙️ <a href=\"{H_COMMAND}\">H Command</a>"
+                )
+
+
 
         if not text:
             await message.answer("Руководства пока не добавлены.")
@@ -533,7 +535,7 @@ async def manuals(message: Message):
             [InlineKeyboardButton(text="🔙 Главное меню", callback_data="main_menu")]
         ])
 
-        await message.answer(text, parse_mode='Markdown', disable_web_page_preview=True, reply_markup=keyboard)
+        await message.answer(text, parse_mode='HTML', disable_web_page_preview=True, reply_markup=keyboard)
     else:
         await message.answer('⛔ У вас нет доступа')
 
@@ -1221,6 +1223,7 @@ async def confirm_date(callback: CallbackQuery, state: FSMContext):
                 f"Пользователь {callback.from_user.id} подтвердил даты: начало {data.get('selected_date_start').strftime('%d.%m.%Y')}, окончание {data.get('selected_date_end').strftime('%d.%m.%Y')}.")
             # ✅ Отправляем сообщение сразу, чтобы вызвать `start_cmd`
             await start_cmd(callback.message, state)
+
 
 
 
