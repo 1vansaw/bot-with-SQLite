@@ -602,6 +602,16 @@ async def process_search_phrase(message: Message, state: FSMContext):
             reply_markup=inline_main_menu
         )
 
+    if len(phrase) < 3:
+        return await message.answer(
+            "Слишком короткий запрос. Минимум 3 символа.",
+            reply_markup=InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [InlineKeyboardButton(text="Почему нельзя?", callback_data="short_query_info")]
+                ]
+            )
+        )
+
     # Отправляем первое сообщение о прогрессе
     progress_msg = await message.answer("🔍 Идёт поиск, пожалуйста подождите...")
 
@@ -651,6 +661,14 @@ async def process_search_phrase(message: Message, state: FSMContext):
             f"Ошибка: {str(e)}. Попробуйте позже.",
             reply_markup=inline_main_menu
         )
+
+@router_records.callback_query(F.data == "short_query_info")
+async def short_query_alert(callback: CallbackQuery):
+    await callback.answer(
+        "Короткие запросы дают слишком много результатов и нагружают базу.",
+        show_alert=True
+    )
+
 
 @router_records.callback_query(lambda c: c.data == "main_menu")
 async def go_to_main_menu(callback: CallbackQuery):
@@ -1222,4 +1240,5 @@ async def cancel_save(callback: CallbackQuery, state: FSMContext):
 # @router_records.callback_query(F.data == "upload_edit")
 # async def upload_edit(callback: CallbackQuery):
 #     await callback.message.answer("Пришлите изменённый файл .xlsx в ответ на это сообщение.")
+
 #     await callback.answer()
