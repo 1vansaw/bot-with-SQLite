@@ -604,13 +604,13 @@ async def process_search_phrase(message: Message, state: FSMContext):
 
     if len(phrase) < 3:
         return await message.answer(
-            "Слишком короткий запрос. Минимум 3 символа.",
+            "Слишком короткий запрос. Минимум 3 символа. Введите заново",
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
-                    [InlineKeyboardButton(text="Почему нельзя?", callback_data="short_query_info")]
-                ]
-            )
-        )
+                    [InlineKeyboardButton(text="⚠️ Почему нельзя?", callback_data="short_query_info")],
+                    *inline_main_menu.inline_keyboard]))
+
+
 
     # Отправляем первое сообщение о прогрессе
     progress_msg = await message.answer("🔍 Идёт поиск, пожалуйста подождите...")
@@ -808,6 +808,14 @@ async def process_search_phrase(message: Message, state: FSMContext):
     if not phrase:
         return await message.answer("Фраза не может быть пустой. Попробуйте ещё раз:")
 
+    if len(phrase) < 3:
+        return await message.answer(
+            "Слишком короткий запрос. Минимум 3 символа. Введите заново",
+            reply_markup=InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [InlineKeyboardButton(text="⚠️ Почему нельзя?", callback_data="short_query_info")],
+                    *inline_main_menu.inline_keyboard]))
+        
     # Отправляем первое сообщение о прогрессе
     progress_msg = await message.answer("🔍 Идёт поиск, пожалуйста подождите...")
 
@@ -1242,3 +1250,4 @@ async def cancel_save(callback: CallbackQuery, state: FSMContext):
 #     await callback.message.answer("Пришлите изменённый файл .xlsx в ответ на это сообщение.")
 
 #     await callback.answer()
+
