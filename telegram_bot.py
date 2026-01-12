@@ -1,6 +1,6 @@
 import asyncio
 from aiogram import Bot, Dispatcher
-from app.handlers import router  
+from app.handlers import router, auto_backup_loop
 from app.timing import router_time
 from app.get_users_id import router_users_id
 from app.records import router_records
@@ -72,10 +72,12 @@ async def main():
     await init_db()  # Инициализация базы данных SQLite
     dp.startup.register(set_main_menu)
     asyncio.create_task(periodic_cleanup())
+    asyncio.create_task(auto_backup_loop())
     await dp.start_polling(bot)
 
 if __name__ == '__main__':
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
+
         print("Бот выключен")
