@@ -1,1 +1,5 @@
-
+{
+    "enabled": false,
+    "interval": "off",
+    "last_backup": 0
+}
