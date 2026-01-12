@@ -59,7 +59,7 @@ edit_mashines = ReplyKeyboardMarkup(
          KeyboardButton(text='❌ Удалить контакт')],
         [KeyboardButton(text='✅ Доб.пользователя'),
          KeyboardButton(text='❌ Удал. пользователя')],
-        [KeyboardButton(text='↩️ Назад')]
+        [KeyboardButton(text='↩️ В главное меню')]
     ],
     resize_keyboard=True,
     input_field_placeholder='Выберите действие'
@@ -74,13 +74,15 @@ admin_menu = ReplyKeyboardMarkup(
          KeyboardButton(text='📢 Рассылка')],
         [KeyboardButton(text='📄 Посмотреть логи'),
          KeyboardButton(text='💾 Резервная копия БД')],
-        [KeyboardButton(text='🕒 Автокопирование БД')], 
+        [KeyboardButton(text='🕒 Автокопирование БД')],
         [KeyboardButton(text='🔄 Восстановить БД из копии')],
-        [KeyboardButton(text='↩️ Назад')]
+        [KeyboardButton(text='↩️ В главное меню')]
     ],
     resize_keyboard=True,
     input_field_placeholder='Выберите действие'
 )
+
+
 
 
 auto_backup_menu = ReplyKeyboardMarkup(
@@ -89,7 +91,7 @@ auto_backup_menu = ReplyKeyboardMarkup(
         [KeyboardButton(text='📅 Раз в неделю')],
         [KeyboardButton(text='🗓 Раз в месяц')],
         [KeyboardButton(text='❌ Отключить автокопирование')],
-        [KeyboardButton(text='↩️ Назад')]
+        [KeyboardButton(text='↩️ В админ меню')]
     ],
     resize_keyboard=True,
     input_field_placeholder='Выберите интервал'
@@ -197,4 +199,5 @@ shops_17 = create_keyboard(load_machines()['maschines_17'])
 shops_20 = create_keyboard(load_machines()['maschines_20'])
 shops_26 = create_keyboard(load_machines()['maschines_26'])
 shops_kmt = create_keyboard(load_machines()['maschines_kmt'])
+
 
