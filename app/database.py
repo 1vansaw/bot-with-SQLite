@@ -8,7 +8,7 @@ from app.data_shops import shops
 router_database = Router()
 
 # Настройка логирования
-logging.basicConfig(level=logging.INFO)
+#logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Путь к БД (можно изменить, например, на 'data/bot_data.db')
@@ -192,6 +192,7 @@ async def get_today_history():
 
     separator = "\n---------------------------------------------\n"
     return separator.join(messages)
+
 
 
 
