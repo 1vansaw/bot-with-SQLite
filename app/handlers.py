@@ -20,8 +20,10 @@ import os
 from dotenv import load_dotenv
 import json
 import app.keyboards as kb
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton
+
 from datetime import datetime, timedelta
+import time
 from app.database import init_db, add_data, get_today_history 
 
 load_dotenv('token.env')  # Загружаем переменные окружения из .env файла
@@ -41,6 +43,34 @@ DB_FILE = 'bot_data.db'
 # Путь к файлу, где будут храниться данные (JSON для пользователей и станков остаётся)
 FILE_PATH = 'json/machines_data.json'
 FILE_PATH_ACCESS = 'json/access_user.json'
+SETTINGS_FILE = "json/auto_backup.json"
+
+INTERVAL_NAMES = {
+    "daily": "раз в день",
+    "weekly": "раз в неделю",
+    "monthly": "раз в месяц",
+    "off": "отключено"
+}
+
+INTERVAL_SECONDS = {
+    "daily": 24 * 3600,
+    "weekly": 7 * 24 * 3600,
+    "monthly": 30 * 24 * 3600,
+    "off": 0
+}
+
+
+def load_auto_backup_settings():
+    if not os.path.exists(SETTINGS_FILE):
+        return {"enabled": False, "interval": "off", "last_backup": 0}
+    with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_auto_backup_settings(settings):
+    with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+        json.dump(settings, f, ensure_ascii=False, indent=4)
+
+
 
 # Функция проверки правильности введенного ID
 def validate_user_id(user_id: str) -> tuple[bool, str]:
@@ -289,52 +319,19 @@ async def go_to_main_menu(callback: CallbackQuery, state: FSMContext):
 
 @router.message(F.text == '💾 Резервная копия БД')
 async def backup_database_handler(message: Message):
-    # Сообщение о начале процесса
     progress_msg = await message.answer("⏳ Создаю резервную копию базы данных...")
 
     try:
         await asyncio.sleep(1)
-        source_db = 'bot_data.db'
 
-        # Проверяем существование исходной базы
-        if not os.path.exists(source_db):
-            await progress_msg.edit_text("❌ Ошибка: исходная база данных не найдена!")
-            logger.error("Резервная копия: исходная база данных не найдена.")
-            return
+        backup_filename = await create_backup()
 
-        # Создаем папку backup, если она не существует
         backup_dir = 'backup'
-        if not os.path.exists(backup_dir):
-            os.makedirs(backup_dir)
-
-        # Получаем список всех файлов резервных копий
-        backup_files = [
-            f for f in os.listdir(backup_dir)
-            if f.startswith('Копия_БД_') and f.endswith('.db')
-        ]
-
-        # Если уже есть 5 копий, удаляем самую старую
-        if len(backup_files) >= 5:
-            backup_files.sort(key=lambda x: os.path.getctime(os.path.join(backup_dir, x)))
-            oldest_file = backup_files[0]
-            os.remove(os.path.join(backup_dir, oldest_file))
-            logger.info(f"Удалена старая резервная копия: {oldest_file}")
-
-        # Создаем имя файла с временной меткой
-        timestamp = datetime.now().strftime("%d.%m.%Y_%H-%M-%S")
-        backup_filename = f"Копия_БД_{timestamp}.db"
-        backup_path = os.path.join(backup_dir, backup_filename)
-
-        # Копируем базу
-        shutil.copy2(source_db, backup_path)
-
-        # Получаем текущее количество копий
         current_count = len([
             f for f in os.listdir(backup_dir)
             if f.startswith('Копия_БД_') and f.endswith('.db')
         ])
 
-        # Обновляем сообщение о прогрессе
         await progress_msg.edit_text(
             f"✅ Резервная копия успешно создана!\n"
             f"Файл: {backup_filename}\n"
@@ -343,11 +340,145 @@ async def backup_database_handler(message: Message):
 
         logger.info(f"Создана резервная копия: {backup_filename} ({current_count}/5)")
 
+    except FileNotFoundError:
+        await progress_msg.edit_text("❌ Ошибка: исходная база данных не найдена!")
+        logger.error("Резервная копия: исходная база данных не найдена.")
+
     except Exception as e:
         await progress_msg.edit_text(f"❌ Ошибка при создании резервной копии: {str(e)}")
         logger.error(f"Ошибка резервного копирования: {e}")
 
 
+
+confirm_menu = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text='✔ Да'), KeyboardButton(text='✖ Отмена')]
+    ],
+    resize_keyboard=True
+)
+
+pending_changes = {}
+
+@router.message(F.text.in_({
+    '🔁 Раз в день',
+    '📅 Раз в неделю',
+    '🗓 Раз в месяц',
+    '❌ Отключить автокопирование'
+}))
+async def auto_backup_interval_handler(message: Message):
+    settings = load_auto_backup_settings()
+
+    # Определяем новый интервал
+    if message.text == '🔁 Раз в день':
+        new_interval = "daily"
+    elif message.text == '📅 Раз в неделю':
+        new_interval = "weekly"
+    elif message.text == '🗓 Раз в месяц':
+        new_interval = "monthly"
+    elif message.text == '❌ Отключить автокопирование':
+        new_interval = "off"
+
+    old_interval = settings["interval"]
+
+    # Сохраняем запрос
+    pending_changes[message.from_user.id] = new_interval
+
+    old_name = INTERVAL_NAMES[old_interval]
+    new_name = INTERVAL_NAMES[new_interval]
+
+    # Формируем текст подтверждения
+    if old_interval == "off":
+        text = f"Включить автокопирование {new_name}?"
+    else:
+        text = (
+            f"Вы хотите изменить период автокопирования\n"
+            f"с **{old_name}** на **{new_name}**?"
+        )
+
+    await message.answer(
+        text,
+        reply_markup=confirm_menu,
+        parse_mode="Markdown"
+    )
+
+@router.message(F.text == '✔ Да')
+async def confirm_auto_backup_change(message: Message):
+    user_id = message.from_user.id
+
+    if user_id not in pending_changes:
+        await message.answer("Нет изменений для подтверждения.", reply_markup=kb.admin_menu)
+        return
+
+    new_interval = pending_changes.pop(user_id)
+    settings = load_auto_backup_settings()
+
+    settings["interval"] = new_interval
+    settings["enabled"] = (new_interval != "off")
+
+    save_auto_backup_settings(settings)
+
+    await message.answer(
+        f"Автокопирование: {INTERVAL_NAMES[new_interval]}.",
+        reply_markup=kb.admin_menu
+    )
+
+@router.message(F.text == '✖ Отмена')
+async def cancel_auto_backup_change(message: Message):
+    pending_changes.pop(message.from_user.id, None)
+
+    await message.answer(
+        "Изменение отменено.",
+        reply_markup=kb.admin_menu
+    )
+
+
+    
+async def create_backup():
+    source_db = 'bot_data.db'
+    backup_dir = 'backup'
+
+    if not os.path.exists(source_db):
+        raise FileNotFoundError("Исходная база данных не найдена")
+
+    if not os.path.exists(backup_dir):
+        os.makedirs(backup_dir)
+
+    # Ротация
+    backup_files = [
+        f for f in os.listdir(backup_dir)
+        if f.startswith('Копия_БД_') and f.endswith('.db')
+    ]
+
+    if len(backup_files) >= 5:
+        backup_files.sort(key=lambda x: os.path.getctime(os.path.join(backup_dir, x)))
+        os.remove(os.path.join(backup_dir, backup_files[0]))
+
+    timestamp = datetime.now().strftime("%d.%m.%Y_%H-%M-%S")
+    backup_filename = f"Копия_БД_{timestamp}.db"
+    backup_path = os.path.join(backup_dir, backup_filename)
+
+    shutil.copy2(source_db, backup_path)
+
+    return backup_filename
+
+async def auto_backup_loop():
+    while True:
+        settings = load_auto_backup_settings()
+
+        if settings["enabled"]:
+            now = time.time()
+            interval_seconds = INTERVAL_SECONDS[settings["interval"]]
+
+            if now - settings["last_backup"] >= interval_seconds:
+                try:
+                    filename = await create_backup()
+                    settings["last_backup"] = now
+                    save_auto_backup_settings(settings)
+                    logger.info(f"Автокопирование: создана копия {filename}")
+                except Exception as e:
+                    logger.error(f"Ошибка автокопирования: {e}")
+
+        await asyncio.sleep(10)
 
 
 
@@ -501,12 +632,39 @@ async def perform_database_restore(backup_filename: str) -> bool:
 
 @router.message(F.text == '🕒 Автокопирование БД')
 async def auto_backup_settings(message: Message):
+    settings = load_auto_backup_settings()
+    interval = settings["interval"]
+
+    # Красивые статусы
+    status_icon = "🟢" if settings["enabled"] else "🔴"
+    interval_icon = {
+        "daily": "🔁",
+        "weekly": "📅",
+        "monthly": "🗓",
+        "off": "❌"
+    }.get(interval, "❔")
+
+    text = (
+        f"{status_icon} **Автокопирование БД**\n\n"
+        f"Текущее состояние: **{INTERVAL_NAMES[interval]}** {interval_icon}\n"
+        f"Выберите новый интервал ниже:"
+    )
+
     await message.answer(
-        "Выберите интервал автоматического резервного копирования:",
-        reply_markup=kb.auto_backup_menu
+        text,
+        reply_markup=kb.auto_backup_menu,
+        parse_mode="Markdown"
     )
 
 
+
+
+@router.message(F.text == '↩️ В админ меню')
+async def auto_backup_back_handler(message: Message):
+    await message.answer(
+        "Возвращаюсь в меню администратора.",
+        reply_markup=kb.admin_menu
+    )
 
 
 @router.message(F.text == '📚 Руководства')
@@ -517,11 +675,12 @@ async def manuals(message: Message):
 
     if role in ["👑 Главный администратор!", "🛠 Администратор!", "👥 Пользователь"]:
         text = (
-                "Выберите руководство:\n\n"
-                f"📄 <a href=\"{MD}\">Параметры MD</a>\n"
-                f"🔧 <a href=\"{PLC_ALARM}\">PLC Alarm</a>\n"
-                f"⚙️ <a href=\"{H_COMMAND}\">H Command</a>"
-                )
+    			"Выберите руководство:\n\n"
+    			f"📄 <a href=\"{MD}\">Параметры MD</a>\n"
+    			f"🔧 <a href=\"{PLC_ALARM}\">PLC Alarm</a>\n"
+    			f"⚙️ <a href=\"{H_COMMAND}\">H Command</a>"
+				)
+
 
 
 
@@ -603,7 +762,7 @@ async def cmd_clear(message: Message, bot):
             print("Все сообщения удалены")
 
 
-@router.message((F.text == '❌ Нет') | (F.text == '↩️ Назад'))
+@router.message((F.text == '❌ Нет') | (F.text == '↩️ В главное меню'))
 async def cmd_clear_no(message: Message, state: FSMContext):
     await state.clear()
     await message.answer(f"Привет, {message.from_user.full_name}!",
@@ -1223,7 +1382,3 @@ async def confirm_date(callback: CallbackQuery, state: FSMContext):
                 f"Пользователь {callback.from_user.id} подтвердил даты: начало {data.get('selected_date_start').strftime('%d.%m.%Y')}, окончание {data.get('selected_date_end').strftime('%d.%m.%Y')}.")
             # ✅ Отправляем сообщение сразу, чтобы вызвать `start_cmd`
             await start_cmd(callback.message, state)
-
-
-
-
