@@ -13,6 +13,13 @@ async def get_user_locale(from_user: User) -> str:
     return locale.locale_alias[loc].split(".")[0]
 
 
+#async def get_user_locale(from_user: User) -> str:
+ #   """Returns C locale for all users."""
+#    # Можете добавить логирование для отладки, если нужно
+#    # logger.debug(f"User locale requested for {from_user.id}, returning C")
+#    return "C"
+
+
 class GenericCalendar:
 
     def __init__(
@@ -73,4 +80,5 @@ class GenericCalendar:
             )
             return False, None
         await query.message.delete_reply_markup()  # removing inline keyboard
+
         return True, date
