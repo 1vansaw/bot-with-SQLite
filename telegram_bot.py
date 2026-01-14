@@ -19,7 +19,7 @@ from logging.handlers import RotatingFileHandler
 from app.database import init_db
 
 # Загружаем переменные окружения из .env файла
-load_dotenv('/home/ivansaw/bot/token.env')
+load_dotenv()
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 logging.basicConfig(
@@ -81,3 +81,4 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
 
         print("Бот выключен")
+
